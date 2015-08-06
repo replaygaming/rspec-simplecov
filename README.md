@@ -1,4 +1,4 @@
-# Rspec::Simplecov
+# RSpec::SimpleCov
 
 [![Gem Version](https://badge.fury.io/rb/rspec-simplecov.svg)](http://badge.fury.io/rb/rspec-simplecov)
 
