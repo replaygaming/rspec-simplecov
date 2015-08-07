@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Jonas Schubert Erlandsson"]
   spec.email         = ["jonas.schubert.erlandsson@my-codeworks.com"]
   spec.summary       = "Integrates SimpleCov with RSpec so that low code coverage fails the test suite."
-  spec.description   = "Creates an after suite hook in RSpect that dynamically creates and injects a new test case that expects the actual code coverage to be at least the lower limit set in SimpleCov."
+  spec.description   = "Creates an after suite hook in RSpec that dynamically creates and injects a new test case that expects the actual code coverage to be at least the lower limit set in SimpleCov."
   spec.homepage      = "https://github.com/replaygaming/rspec-simplecov"
   spec.license       = "MIT"
 
