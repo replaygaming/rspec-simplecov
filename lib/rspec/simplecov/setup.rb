@@ -44,7 +44,9 @@ module RSpec
               coverage_example_group.metadata[ :rerun_file_path ] = configuration.caller_path
               coverage_example_group.metadata[ :file_path ] = configuration.caller_path
 
-              coverage_example.execution_result.exception.backtrace.push( *configuration.backtrace )
+              if coverage_example.execution_result.exception
+                coverage_example.execution_result.exception.backtrace.push( *configuration.backtrace )
+              end
 
               # Evaluate the result
               passed = coverage_example.execution_result.status == :passed
