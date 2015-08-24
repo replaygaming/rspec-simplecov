@@ -2,7 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/rspec-simplecov.svg)](http://badge.fury.io/rb/rspec-simplecov)
 
-Creates an after suite hook in RSpect that dynamically creates and injects a new
+Creates an after suite hook in RSpec that dynamically creates and injects a new
 test case that expects the actual code coverage to be at least the lower limit
 set in Simplecov.
 
@@ -51,7 +51,7 @@ RSpec::SimpleCov.start
 
 RSpec.configure do |config|
   # ...
-``
+```
 
 And you to can enjoy the glory of a failing RSpec suite when your code coverage
 drops below `SimpleCov.minimum_coverage` :)
