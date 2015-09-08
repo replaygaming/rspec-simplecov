@@ -14,26 +14,28 @@ module RSpec
 
       class << self
 
-        def with_metadata_key_location_unreserved
+        def remove_location_from_reserver_keys
           RSpec::Core::Metadata::RESERVED_KEYS.delete(:location)
-          yield
+        end
+
+        def reinstate_location_in_reserved_keys
           RSpec::Core::Metadata::RESERVED_KEYS.push(:location)
         end
 
         def build_contexts_and_example( coverage, configuration )
-          RSpec::SimpleCov::Setup.with_metadata_key_location_unreserved do
-            coverage.example_group = RSpec.describe( configuration.described_thing, location: 'spec_helper_spec.rb') do
-              coverage.example_context = context configuration.context_text do
-                coverage.example = it configuration.test_case_text do
-                  result = configuration.described_thing.result
-                  minimum_coverage = configuration.described_thing.minimum_coverage
-                  configuration.described_thing.running = true
-                  
-                  expect( result.covered_percent ).to be >= minimum_coverage
-                end
-              end
-            end
+          remove_location_from_reserver_keys
+
+          coverage.example_group = RSpec.describe( configuration.described_thing, location: 'spec_helper_spec.rb')
+          coverage.example_context = coverage.example_group.context configuration.context_text
+          coverage.example = coverage.example_context.it configuration.test_case_text do
+            result = configuration.described_thing.result
+            minimum_coverage = configuration.described_thing.minimum_coverage
+            configuration.described_thing.running = true
+            
+            expect( result.covered_percent ).to be >= minimum_coverage
           end
+
+          reinstate_location_in_reserved_keys
         end
 
         def run_example( coverage )
@@ -68,25 +70,23 @@ module RSpec
           RSpec.configuration.reporter.example_group_finished coverage.example_group
         end
 
+        def setup_execute_and_analyse_coverage_example( configuration )
+          include RSpec::SimpleCov
+
+          coverage = Container.new
+
+          Setup.build_contexts_and_example( coverage, configuration )
+          Setup.run_example( coverage )
+          Setup.reset_example_group_paths( coverage.example_group, configuration.caller_path )
+          Setup.fix_example_backtrace( coverage.example, configuration.backtrace )
+          Setup.evaluate_and_report_result( coverage.example )
+          Setup.mark_contexts_as_finished( coverage )
+        end
+
         def do( configuration )
           RSpec.configure do |config|
-
             config.after(:suite) do
-              coverage = Container.new
-
-              include RSpec::SimpleCov
-
-              Setup.build_contexts_and_example( coverage, configuration )
-
-              Setup.run_example( coverage )
-
-              Setup.reset_example_group_paths( coverage.example_group, configuration.caller_path )
-
-              Setup.fix_example_backtrace( coverage.example, configuration.backtrace )
-
-              Setup.evaluate_and_report_result( coverage.example )
-
-              Setup.mark_contexts_as_finished( coverage )
+              Setup.setup_execute_and_analyse_coverage_example( configuration )
             end
           end
         end
