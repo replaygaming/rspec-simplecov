@@ -1,6 +1,9 @@
 # RSpec::SimpleCov
 
 [![Gem Version](https://badge.fury.io/rb/rspec-simplecov.svg)](http://badge.fury.io/rb/rspec-simplecov)
+[![Code Climate](https://codeclimate.com/github/replaygaming/rspec-simplecov/badges/gpa.svg)](https://codeclimate.com/github/replaygaming/rspec-simplecov)
+[![Test Coverage](https://codeclimate.com/github/replaygaming/rspec-simplecov/badges/coverage.svg)](https://codeclimate.com/github/replaygaming/rspec-simplecov/coverage)
+
 
 Creates an after suite hook in RSpec that dynamically creates and injects a new
 test case that expects the actual code coverage to be at least the lower limit
