@@ -25,19 +25,6 @@ module RSpec
                 coverage_example_group = RSpec.describe( configuration.described_thing, location: 'spec_helper_spec.rb') do
                   coverage_example_context = context configuration.context_text do
                     coverage_example = it configuration.test_case_text do
-                      #result = ::SimpleCov::Result.new(Coverage.result)
-                      
-                      #p result.original_result.keys
-
-                      #p result.files
-                      #p result.source_files
-                      #p result.covered_percent
-                      #p result.covered_strength
-                      #p result.covered_lines
-                      #p result.missed_lines
-                      #p result.total_lines
-                      #p result.filenames
-
                       expect( configuration.described_thing.result.covered_percent ).to be >= configuration.described_thing.minimum_coverage
                     end
                   end
