@@ -1,6 +1,3 @@
-require "docile"
-require "simplecov"
-
 module RSpec
   module SimpleCov
     class Configuration
