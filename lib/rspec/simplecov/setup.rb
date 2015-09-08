@@ -1,61 +1,92 @@
 module RSpec
   module SimpleCov
+    class Container
+      attr_accessor :example_group, :example_context, :example
+
+      def initialize
+        @example_group = nil
+        @example_context = nil
+        @example = nil
+      end
+    end
+
     module Setup
 
       class << self
 
-        # Ugly hack ...
         def with_metadata_key_location_unreserved
           RSpec::Core::Metadata::RESERVED_KEYS.delete(:location)
           yield
           RSpec::Core::Metadata::RESERVED_KEYS.push(:location)
         end
 
+        def build_contexts_and_example( coverage, configuration )
+          RSpec::SimpleCov::Setup.with_metadata_key_location_unreserved do
+            coverage.example_group = RSpec.describe( configuration.described_thing, location: 'spec_helper_spec.rb') do
+              coverage.example_context = context configuration.context_text do
+                coverage.example = it configuration.test_case_text do
+                  result = configuration.described_thing.result
+                  minimum_coverage = configuration.described_thing.minimum_coverage
+                  configuration.described_thing.running = true
+                  
+                  expect( result.covered_percent ).to be >= minimum_coverage
+                end
+              end
+            end
+          end
+        end
+
+        def run_example( coverage )
+          RSpec.configuration.reporter.example_group_started coverage.example_group
+          RSpec.configuration.reporter.example_group_started coverage.example_context
+          RSpec.configuration.reporter.example_started coverage.example
+          coverage.example_group.run
+        end
+
+        def reset_example_group_paths( example_group, path )
+          example_group.metadata[ :absolute_file_path ] = path
+          example_group.metadata[ :rerun_file_path ] = path
+          example_group.metadata[ :file_path ] = path
+        end
+
+        def fix_example_backtrace( example, backtrace )
+          return unless example.execution_result.exception
+          
+          example.execution_result.exception.backtrace.push( *backtrace )
+        end
+
+        def evaluate_and_report_result( example )
+          passed = example.execution_result.status == :passed
+          failed = !passed
+
+          RSpec.configuration.reporter.example_failed example if failed
+          RSpec.configuration.reporter.example_passed example if passed
+        end
+
+        def mark_contexts_as_finished( coverage )
+          RSpec.configuration.reporter.example_group_finished coverage.example_context
+          RSpec.configuration.reporter.example_group_finished coverage.example_group
+        end
+
         def do( configuration )
           RSpec.configure do |config|
 
             config.after(:suite) do
-              # Setup empty vars to hold the group and example refs.
-              coverage_example_group = nil
-              coverage_example_context = nil
-              coverage_example = nil
+              coverage = Container.new
 
-              # Build the fake test for coverage
-              RSpec::SimpleCov::Setup.with_metadata_key_location_unreserved do
-                coverage_example_group = RSpec.describe( configuration.described_thing, location: 'spec_helper_spec.rb') do
-                  coverage_example_context = context configuration.context_text do
-                    coverage_example = it configuration.test_case_text do
-                      expect( configuration.described_thing.result.covered_percent ).to be >= configuration.described_thing.minimum_coverage
-                    end
-                  end
-                end
-              end
+              include RSpec::SimpleCov
 
-              # Run the test
-              RSpec.configuration.reporter.example_group_started coverage_example_group
-              RSpec.configuration.reporter.example_group_started coverage_example_context
-              RSpec.configuration.reporter.example_started coverage_example
-              coverage_example_group.run
+              Setup.build_contexts_and_example( coverage, configuration )
 
-              coverage_example_group.metadata[ :absolute_file_path ] = configuration.caller_path
-              coverage_example_group.metadata[ :rerun_file_path ] = configuration.caller_path
-              coverage_example_group.metadata[ :file_path ] = configuration.caller_path
+              Setup.run_example( coverage )
 
-              if coverage_example.execution_result.exception
-                coverage_example.execution_result.exception.backtrace.push( *configuration.backtrace )
-              end
+              Setup.reset_example_group_paths( coverage.example_group, configuration.caller_path )
 
-              # Evaluate the result
-              passed = coverage_example.execution_result.status == :passed
-              failed = !passed
+              Setup.fix_example_backtrace( coverage.example, configuration.backtrace )
 
-              # Message the reporter to have it show up in the results 
-              RSpec.configuration.reporter.example_failed coverage_example if failed
-              RSpec.configuration.reporter.example_passed coverage_example if passed
+              Setup.evaluate_and_report_result( coverage.example )
 
-              # Close out the reporter groups
-              RSpec.configuration.reporter.example_group_finished coverage_example_context
-              RSpec.configuration.reporter.example_group_finished coverage_example_group
+              Setup.mark_contexts_as_finished( coverage )
             end
           end
         end
