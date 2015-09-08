@@ -22,18 +22,22 @@ module RSpec
           RSpec::Core::Metadata::RESERVED_KEYS.push(:location)
         end
 
-        def build_contexts_and_example( coverage, configuration )
-          remove_location_from_reserver_keys
-
-          coverage.example_group = RSpec.describe( configuration.described_thing, location: 'spec_helper_spec.rb')
-          coverage.example_context = coverage.example_group.context configuration.context_text
-          coverage.example = coverage.example_context.it configuration.test_case_text do
+        def build_example( context, configuration )
+          context.it configuration.test_case_text do
             result = configuration.described_thing.result
             minimum_coverage = configuration.described_thing.minimum_coverage
             configuration.described_thing.running = true
             
             expect( result.covered_percent ).to be >= minimum_coverage
           end
+        end
+
+        def build_contexts_and_example( coverage, configuration )
+          remove_location_from_reserver_keys
+
+          coverage.example_group = RSpec.describe( configuration.described_thing, location: 'spec_helper_spec.rb')
+          coverage.example_context = coverage.example_group.context configuration.context_text
+          coverage.example = build_example( coverage.example_context, configuration )
 
           reinstate_location_in_reserved_keys
         end
