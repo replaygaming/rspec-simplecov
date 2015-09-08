@@ -2,7 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/rspec-simplecov.svg)](http://badge.fury.io/rb/rspec-simplecov)
 [![Code Climate](https://codeclimate.com/github/replaygaming/rspec-simplecov/badges/gpa.svg)](https://codeclimate.com/github/replaygaming/rspec-simplecov)
-[![GitHub issues](https://img.shields.io/github/issues/badges/shields.svg)](https://github.com/replaygaming/rspec-simplecov)
+[![GitHub issues](https://img.shields.io/github/issues/replaygaming/rspec-simplecov.svg)](https://github.com/replaygaming/rspec-simplecov/issues)
 
 
 Creates an after suite hook in RSpec that dynamically creates and injects a new
